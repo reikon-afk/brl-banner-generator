@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K13 Style Banner Generator</title>
+<style>
+:root{
+  --bg:#09090b;--panel:#14161a;--field:#1b1e23;--cyan:#ff4fa3;
+  --text:#f5f7fa;--muted:#8d929b;--border:#282c33;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:radial-gradient(circle at 50% -10%,#2a1723 0,#09090b 42%);
+  color:var(--text);font-family:Arial,Helvetica,sans-serif;min-height:100vh;
+}
+.wrap{width:min(920px,94%);margin:0 auto;padding:38px 0 60px}
+h1{font-size:clamp(38px,7vw,72px);line-height:.9;margin:0 0 12px;font-weight:900;letter-spacing:-3px}
+h1 span{color:var(--cyan)}
+.subtitle{color:#8d929b;font-size:18px;margin-bottom:30px}
+.card{
+  background:rgba(20,22,26,.96);border:1px solid var(--border);
+  border-radius:24px;padding:28px;box-shadow:0 20px 60px #0008;
+}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.field.full{grid-column:1/-1}
+label{display:block;color:#8d929b;font-weight:700;letter-spacing:3px;font-size:13px;margin:4px 0 9px}
+input,select{
+  width:100%;height:62px;border:1px solid #282c33;border-radius:14px;
+  background:var(--field);color:white;padding:0 18px;font-size:19px;outline:none;
+}
+input:focus,select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #ff4fa322}
+button{
+  width:100%;height:64px;border:0;border-radius:14px;background:var(--cyan);
+  color:#180914;font-size:19px;font-weight:900;letter-spacing:1px;cursor:pointer;
+  margin-top:22px;transition:.15s transform,.15s filter;
+}
+button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.preview{
+  margin-top:28px;border-top:1px solid var(--border);padding-top:28px;
+}
+.preview-title{color:#8d929b;letter-spacing:2px;font-size:13px;font-weight:700;margin-bottom:12px}
+.canvas-wrap{overflow:hidden;border-radius:15px;border:1px solid var(--border);background:#08090a}
+canvas{display:block;width:100%;height:auto}
+.hint{color:#70757e;font-size:14px;margin:12px 0 0}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.card{padding:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>BRL <span>BANNER</span><br>GENERATOR</h1>
+  <div class="subtitle">Crée ta bannière esport personnalisée.</div>
+
+  <div class="card">
+    <div class="grid">
+      <div class="field">
+        <label>PSEUDO</label>
+        <input id="pseudo" value="Reikon" maxlength="18">
+      </div>
+      <div class="field">
+        <label>NUMÉRO</label>
+        <input id="number" type="number" value="88" min="0" max="999">
+      </div>
+      <div class="field">
+        <label>JEU</label>
+        <select id="game">
+          <option>Brawl Stars</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>POSTE</label>
+        <select id="role">
+          <option>Joueur</option>
+          <option>Coach</option>
+          <option>Supporter</option>
+        </select>
+      </div>
+    </div>
+
+    <button id="download">TÉLÉCHARGER LA BANNIÈRE</button>
+
+    <div class="preview">
+      <div class="preview-title">APERÇU — 3000 × 1000 PX</div>
+      <div class="canvas-wrap"><canvas id="banner" width="3000" height="1000"></canvas></div>
+      <p class="hint">L'aperçu se met à jour automatiquement. Le téléchargement produit un vrai PNG en 3000 × 1000.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas=document.getElementById("banner");
+const ctx=canvas.getContext("2d");
+
+const pseudo=document.getElementById("pseudo");
+const number=document.getElementById("number");
+const game=document.getElementById("game");
+const role=document.getElementById("role");
+
+function draw(){
+  const W=3000,H=1000;
+  ctx.clearRect(0,0,W,H);
+
+  // Fond premium
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,"#f7f4f6");
+  bg.addColorStop(.48,"#eee8ec");
+  bg.addColorStop(.50,"#1a1016");
+  bg.addColorStop(1,"#09080a");
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // Texture discrète
+  ctx.save();
+  ctx.globalAlpha=.06;
+  ctx.strokeStyle="#6d5964"; ctx.lineWidth=3;
+  for(let x=-300;x<1700;x+=170){
+    for(let y=40;y<1000;y+=170){
+      ctx.beginPath(); ctx.arc(x,y,105,0,Math.PI*2); ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  // Séparation diagonale
+  ctx.fillStyle="#ff4fa3";
+  ctx.beginPath();
+  ctx.moveTo(1490,0);ctx.lineTo(1630,0);ctx.lineTo(1170,1000);ctx.lineTo(1030,1000);
+  ctx.closePath();ctx.fill();
+
+  // Logo / identité
+  ctx.fillStyle="#151117";
+  ctx.font="900 62px Arial";
+  ctx.fillText("BRL ESPORT",170,145);
+  ctx.fillStyle="#ff4fa3";
+  ctx.font="900 30px Arial";
+  ctx.fillText("BRAWL STARS",170,195);
+
+  // Petit emblème BRL
+  ctx.fillStyle="#151117";
+  ctx.beginPath();
+  ctx.moveTo(170,270);ctx.lineTo(285,250);ctx.lineTo(325,315);ctx.lineTo(270,385);
+  ctx.lineTo(170,365);ctx.closePath();ctx.fill();
+  ctx.fillStyle="#fff";
+  ctx.font="900 48px Arial";
+  ctx.fillText("BRL",190,330);
+
+  // Joueur
+  ctx.fillStyle="#151117";
+  ctx.font="900 100px Arial";
+  ctx.fillText(pseudo.value.toUpperCase(),170,585);
+  ctx.fillStyle="#5e5660";
+  ctx.font="700 32px Arial";
+  ctx.fillText(role.value.toUpperCase()+"  •  BRAWL STARS",175,642);
+
+  // -------- MAillot premium --------
+  const mx=2030, my=95, mw=650, mh=800;
+
+  // Silhouette du maillot
+  const jerseyPath=()=>{
+    ctx.beginPath();
+    ctx.moveTo(mx+150,my);
+    ctx.lineTo(mx+285,my);
+    ctx.quadraticCurveTo(mx+325,my+70,mx+365,my);
+    ctx.lineTo(mx+500,my);
+    ctx.lineTo(mx+625,my+170);
+    ctx.lineTo(mx+545,my+255);
+    ctx.lineTo(mx+500,my+195);
+    ctx.lineTo(mx+510,my+mh);
+    ctx.lineTo(mx+140,my+mh);
+    ctx.lineTo(mx+150,my+195);
+    ctx.lineTo(mx+105,my+255);
+    ctx.lineTo(mx+25,my+170);
+    ctx.closePath();
+  };
+
+  ctx.save();
+  jerseyPath();
+  const jersey=ctx.createLinearGradient(mx,my,mx+mw,my+mh);
+  jersey.addColorStop(0,"#24151f");
+  jersey.addColorStop(.45,"#0e0b10");
+  jersey.addColorStop(1,"#25101d");
+  ctx.fillStyle=jersey; ctx.fill();
+  ctx.clip();
+
+  // Bandes graphiques du maillot
+  ctx.fillStyle="#ff4fa3";
+  ctx.globalAlpha=.9;
+  ctx.beginPath();
+  ctx.moveTo(mx-30,my+570);ctx.lineTo(mx+250,my+260);
+  ctx.lineTo(mx+325,my+260);ctx.lineTo(mx+30,my+700);ctx.closePath();ctx.fill();
+
+  ctx.globalAlpha=.35;
+  ctx.fillStyle="#ffb3d3";
+  ctx.beginPath();
+  ctx.moveTo(mx+390,my-20);ctx.lineTo(mx+700,my+350);
+  ctx.lineTo(mx+700,my+500);ctx.lineTo(mx+300,my+20);ctx.closePath();ctx.fill();
+  ctx.globalAlpha=1;
+
+  // Motif de lianes Sakura
+  function vine(points){
+    ctx.beginPath();
+    ctx.moveTo(points[0][0],points[0][1]);
+    for(let i=1;i<points.length;i++){
+      const p=points[i-1], q=points[i];
+      const cx=(p[0]+q[0])/2;
+      const cy=(p[1]+q[1])/2;
+      ctx.quadraticCurveTo(cx,cy,q[0],q[1]);
+    }
+    ctx.strokeStyle="#5f9a76";
+    ctx.lineWidth=11;
+    ctx.lineCap="round";
+    ctx.stroke();
+
+    // petites feuilles
+    for(let i=1;i<points.length;i+=2){
+      const [x,y]=points[i];
+      ctx.fillStyle="#78b887";
+      ctx.beginPath();
+      ctx.ellipse(x+18,y-8,25,11,-.5,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function sakura(x,y,s=1){
+    ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+    for(let i=0;i<5;i++){
+      const a=i*Math.PI*2/5-Math.PI/2;
+      ctx.save();ctx.rotate(a);
+      const g=ctx.createRadialGradient(0,-35,4,0,-35,35);
+      g.addColorStop(0,"#fff4f8");g.addColorStop(1,"#ff72ae");
+      ctx.fillStyle=g;
+      ctx.beginPath();
+      ctx.ellipse(0,-35,22,40,0,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle="#ffd35f";ctx.beginPath();ctx.arc(0,0,10,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+
+  vine([[mx+40,my+690],[mx+125,my+590],[mx+105,my+500],[mx+190,my+405],[mx+150,my+300],[mx+245,my+210]]);
+  vine([[mx+455,my+720],[mx+390,my+620],[mx+470,my+535],[mx+405,my+425],[mx+500,my+330],[mx+450,my+220]]);
+
+  sakura(mx+185,my+410,.75);
+  sakura(mx+505,my+345,.62);
+  sakura(mx+250,my+675,.55);
+  sakura(mx+455,my+600,.48);
+
+  // Col / finition
+  ctx.fillStyle="#ff4fa3";
+  ctx.beginPath();
+  ctx.moveTo(mx+285,my);ctx.lineTo(mx+365,my);ctx.lineTo(mx+345,my+72);
+  ctx.lineTo(mx+305,my+72);ctx.closePath();ctx.fill();
+
+  // Motif japonais discret
+  ctx.globalAlpha=.13;ctx.strokeStyle="#ff9ac6";ctx.lineWidth=4;
+  for(let y=my+100;y<my+mh;y+=70){
+    ctx.beginPath();ctx.moveTo(mx+100,y);ctx.lineTo(mx+560,y);ctx.stroke();
+  }
+  ctx.restore();
+
+  // Contour du maillot
+  jerseyPath();
+  ctx.strokeStyle="#ff4fa3";ctx.lineWidth=12;ctx.stroke();
+
+  // Texte sur le maillot
+  ctx.textAlign="center";
+  ctx.fillStyle="#fff";
+  ctx.font="900 54px Arial";
+  ctx.fillText(pseudo.value.toUpperCase(),mx+325,my+205);
+  ctx.fillStyle="#ff75b1";
+  ctx.font="700 25px Arial";
+  ctx.fillText(role.value.toUpperCase(),mx+325,my+242);
+
+  ctx.fillStyle="#fff";
+  ctx.font="900 245px Arial";
+  ctx.fillText(String(number.value||0),mx+325,my+560);
+
+  ctx.fillStyle="#f4dce7";
+  ctx.font="700 27px Arial";
+  ctx.fillText("BRL  •  BRAWL STARS",mx+325,my+625);
+
+  // Fleur au premier plan
+  sakura(mx+325,my+745,.42);
+
+  ctx.textAlign="start";
+} 
+
+[pseudo,number,game,role].forEach(el=>el.addEventListener("input",draw));
+
+document.getElementById("download").addEventListener("click",()=>{
+  draw();
+  const a=document.createElement("a");
+  a.download="k13-banner.png";
+  a.href=canvas.toDataURL("image/png");
+  a.click();
+});
+draw();
+</script>
+</body>
+</html>
